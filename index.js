@@ -27,6 +27,7 @@ export { useLocalStorage } from './src/hooks/uselocalstorage'
 export { useScript } from './src/hooks/usescript'
 export { useWindowResize } from './src/hooks/usewindowresize'
 export { useInterval } from './src/hooks/useinterval'
+export { useReplace100vh } from './src/methods/usereplace100vh'
 
 export { Disqus } from './src/disqus/disqus'
 
