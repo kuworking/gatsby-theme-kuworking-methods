@@ -95,6 +95,8 @@ export const KwImg = ({
 export const BImg = props => <Img {...props} background={true} />
 
 export const Img = ({
+  delay = 500,
+  blank = '/blank.gif',
   image: [standard, set],
   component,
   alt = 'image',
@@ -102,6 +104,7 @@ export const Img = ({
   lazy = true,
   adjustMasonry = null,
   children,
+  ...rest
 }) => {
   /**
    * 1. selects image based on clientWidth among the images provided
@@ -125,7 +128,7 @@ export const Img = ({
     rootMargin: '200px 0px',
     threshold: 0,
   })
-  useCallback
+
   const handleRef = useCallback(
     node => {
       // in order to have a real reference since the ref from useInView doesn't have a current value
@@ -137,11 +140,12 @@ export const Img = ({
     [ref]
   )
 
-  const [src, setSrc] = useState('')
+  const [best, setBest] = useState('')
+  const [src, setSrc] = useState(blank)
   const resize = useWindowResize()
 
   useEffect(() => {
-    const clientWidth = trueRef.current.clientWidth
+    const clientWidth = trueRef && trueRef.current && trueRef.current.clientWidth
     const bestImage = set
       ? clientWidth < 400
         ? set['400px'] || standard
@@ -157,7 +161,8 @@ export const Img = ({
         ? set['1800px'] || standard
         : standard
       : standard
-    setSrc(bestImage)
+    setBest(bestImage)
+    if (!lazy) setSrc(bestImage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resize]) // changes when window is resized
 
@@ -168,30 +173,37 @@ export const Img = ({
     if (!lazy) return // if !lazy we'll never be here
     ;(async () => {
       if (inView) {
-        await wait(200)
+        await wait(delay)
+        setSrc(best)
+        await 200
         entry.target.style.opacity = 1 // in sync with styled below
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView])
 
+  const opac = lazy ? 0 : 1
+
   return background ? (
     <BackgroundImage
-      style={{ opacity: '0' }}
+      style={{ opacity: opac }}
       component={component}
-      src={inView || !lazy ? src : null}
+      src={inView || !lazy ? src : blank}
       ref={lazy ? handleRef : null}
       alt={alt}
+      {...rest}
     >
       {children}
     </BackgroundImage>
   ) : (
     <Image
-      style={{ opacity: '0' }}
+      style={{ opacity: opac }}
       component={component}
-      src={inView || !lazy ? src : null}
+      src={src}
+      //  src={inView || !lazy ? src : blank}
       ref={lazy ? handleRef : null}
       alt={alt}
+      {...rest}
     />
   )
 }

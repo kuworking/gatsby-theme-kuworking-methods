@@ -1,6 +1,6 @@
 {
   "name": "gatsby-theme-kuworking-methods",
-  "version": "0.1.5",
+  "version": "0.1.13",
   "description": "gatsby-theme-kuworking-methods",
   "main": "index.js",
   "author": "kuworking.com",
@@ -42,5 +42,6 @@
     "net": "gatsby develop -H 192.168.1.100",
     "clean": "gatsby clean",
     "bump": "."
-  }
+  },
+  "gitHead": "4a9a3767114813dc463907805e13dd35ce833620"
 }
