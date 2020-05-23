@@ -8,7 +8,7 @@ export { Modal } from './src/elements/modal'
 
 export { Fade } from './src/animations/fade'
 export { Toggle } from './src/animations/toggle'
-export { Move } from './src/animations/move'
+export { Move, MoveUp, MoveDown, MoveLeft, MoveRight } from './src/animations/move'
 
 export { TextLetterFade } from './src/textanimations/textletterfade'
 export { TextLetterFade2 } from './src/textanimations/textletterfade2'
@@ -27,12 +27,15 @@ export { useScript } from './src/hooks/usescript'
 export { useWindowResize } from './src/hooks/usewindowresize'
 export { useInterval } from './src/hooks/useinterval'
 export { useReplace100vh } from './src/hooks/usereplace100vh'
+export { useInnerWidth } from './src/hooks/useinnerwidth'
 
 export { Disqus } from './src/disqus/disqus'
 
 export { CodeLink, useCodePenScript, CodePen } from './src/methods/codepen'
 export { Highlight, apply_highlight } from './src/methods/highlight'
 export { BImg, Img, KwImg } from './src/methods/image'
+export { BImageSet } from './src/methods/image-set'
+
 export { fixDate, shuffle_array, is_this_a_mobile_device, wait, get_response, get_request } from './src/methods/methods'
 export { Prism } from './src/methods/prism'
 

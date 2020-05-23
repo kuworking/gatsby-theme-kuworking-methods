@@ -1,6 +1,6 @@
 // v2020.04.08
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import styled from '@emotion/styled'
 import { useWindowResize } from '../hooks/usewindowresize'
 import { useInView } from 'react-intersection-observer'
@@ -95,7 +95,7 @@ export const KwImg = ({
 export const BImg = props => <Img {...props} background={true} />
 
 export const Img = ({
-  delay = 500,
+  delay = 0,
   blank = '/blank.gif',
   image: [standard, set],
   component,
@@ -122,7 +122,10 @@ export const Img = ({
    * 4. loads lazy through useInView
    */
 
-  const trueRef = useRef()
+  const supportsLazyLoad =
+    typeof window !== 'undefined' ? (background ? false : 'loading' in document.createElement('img')) : false
+
+  const trueRef = useRef() // needed to read the width of the container
   const [ref, inView, entry] = useInView({
     triggerOnce: true,
     rootMargin: '200px 0px',
@@ -144,53 +147,57 @@ export const Img = ({
   const [src, setSrc] = useState(blank)
   const resize = useWindowResize()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const clientWidth = trueRef && trueRef.current && trueRef.current.clientWidth
     const bestImage = set
       ? clientWidth < 400
-        ? set['400px'] || standard
+        ? set['400px'] || set['600px'] || set['800px'] || set['1000px'] || set['1200px'] || set['1800px'] || standard
         : clientWidth < 600
-        ? set['600px'] || standard
+        ? set['600px'] || set['800px'] || set['1000px'] || set['1200px'] || set['1800px'] || standard
         : clientWidth < 800
-        ? set['800px'] || standard
+        ? set['800px'] || set['1000px'] || set['1200px'] || set['1800px'] || standard
         : clientWidth < 1000
-        ? set['1000px'] || standard
+        ? set['1000px'] || set['1200px'] || set['1800px'] || standard
         : clientWidth < 1200
-        ? set['1200px'] || standard
+        ? set['1200px'] || set['1800px'] || standard
         : clientWidth < 1800
         ? set['1800px'] || standard
         : standard
       : standard
+
     setBest(bestImage)
-    if (!lazy) setSrc(bestImage)
+    if (!lazy || supportsLazyLoad) setSrc(bestImage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resize]) // changes when window is resized
+  }, [resize, standard, set]) // changes when window is resized
 
   useEffect(() => {
-    if (adjustMasonry) adjustMasonry()
-    setTimeout(adjustMasonry, 2000) // just in case, sometimes (cannot reproduce!) the function seems not to be executed
+    if (adjustMasonry) {
+      adjustMasonry()
+      setTimeout(adjustMasonry, 2000) // just in case, sometimes (cannot reproduce!) the function seems not to be executed
+    }
 
-    if (!lazy) return // if !lazy we'll never be here
+    if (!lazy || supportsLazyLoad) return // if !lazy we'll never be here
     ;(async () => {
       if (inView) {
         await wait(delay)
         setSrc(best)
-        await 200
+        await 50
         entry.target.style.opacity = 1 // in sync with styled below
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView])
 
-  const opac = lazy ? 0 : 1
+  const opac = lazy && !supportsLazyLoad ? 0 : 1
 
   return background ? (
     <BackgroundImage
       style={{ opacity: opac }}
       component={component}
       src={inView || !lazy ? src : blank}
-      ref={lazy ? handleRef : null}
+      ref={handleRef}
       alt={alt}
+      className="kw_bimg"
       {...rest}
     >
       {children}
@@ -198,11 +205,13 @@ export const Img = ({
   ) : (
     <Image
       style={{ opacity: opac }}
+      loading="lazy"
       component={component}
       src={src}
       //  src={inView || !lazy ? src : blank}
-      ref={lazy ? handleRef : null}
+      ref={handleRef}
       alt={alt}
+      className="kw_img"
       {...rest}
     />
   )
@@ -210,12 +219,12 @@ export const Img = ({
 
 const Image = styled.img`
   ${props => props.component}
-  transition: opacity 0.5s ease-in;
+  transition: opacity 0.1s ease-in;
 `
 
 const BackgroundImage = styled.div`
   ${props => props.component}
-  transition: opacity 0.5s ease-in;
+  transition: opacity 0.1s ease-in;
   background-image: ${props => `url("${props.src}")`};
   background-repeat: no-repeat;
 `
